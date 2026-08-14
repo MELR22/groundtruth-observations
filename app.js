@@ -32,6 +32,8 @@ const cairnDiameter = document.getElementById("cairnDiameter");
 const measurement = document.getElementById("measurement");
 const surfaceCondition = document.getElementById("surfaceCondition");
 const trailArchitecture = document.getElementById("trailArchitecture");
+const wetTrailConditionField = document.getElementById("wetTrailConditionField");
+const wetTrailCondition = document.getElementById("wetTrailCondition");
 const photoInput = document.getElementById("photo");
 const photoPreview = document.getElementById("photoPreview");
 const previewImage = document.getElementById("previewImage");
@@ -57,6 +59,25 @@ function updateCategoryUI() {
     measurement.value = "";
     surfaceCondition.value = "";
     trailArchitecture.value = "";
+  }
+
+  const showWidthExtras = observationType === "Trail width";
+  const surfaceLabel = surfaceCondition.previousElementSibling;
+  const architectureLabel = trailArchitecture.previousElementSibling;
+
+  surfaceCondition.style.display = showWidthExtras ? "block" : "none";
+  if (surfaceLabel) surfaceLabel.style.display = showWidthExtras ? "block" : "none";
+  trailArchitecture.style.display = showWidthExtras ? "block" : "none";
+  if (architectureLabel) architectureLabel.style.display = showWidthExtras ? "block" : "none";
+
+  if (!showWidthExtras) {
+    surfaceCondition.value = "";
+    trailArchitecture.value = "";
+  }
+
+  wetTrailConditionField.style.display = observationType === "Wet trail" ? "block" : "none";
+  if (observationType !== "Wet trail") {
+    wetTrailCondition.value = "";
   }
 
   cairnHeightField.style.display = observationType === "Cairn" ? "block" : "none";
@@ -460,6 +481,7 @@ saveButton.addEventListener("click", async () => {
   let cairnDiameterValue = "";
   let surfaceConditionValue = "";
   let trailArchitectureValue = "";
+  let wetTrailConditionValue = "";
   let trackData = null;
 
   if (observation_type === "Trail width" || observation_type === "Track trail") {
@@ -469,6 +491,8 @@ saveButton.addEventListener("click", async () => {
   } else if (observation_type === "Cairn") {
     cairnHeightValue = cairnHeight.value.trim();
     cairnDiameterValue = cairnDiameter.value.trim();
+  } else if (observation_type === "Wet trail") {
+    wetTrailConditionValue = wetTrailCondition.value.trim();
   }
 
   if (observation_type === "Track trail") {
@@ -479,13 +503,18 @@ saveButton.addEventListener("click", async () => {
     trackData = JSON.stringify(trackingPoints);
   }
 
-  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !surfaceConditionValue && !trailArchitectureValue && !selectedPhoto && !trackData) {
+  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !surfaceConditionValue && !trailArchitectureValue && !wetTrailConditionValue && !selectedPhoto && !trackData) {
     setMessage("Please add a measurement, note, photo, or track trail.");
     return;
   }
 
   if ((observation_type === "Trail width" || observation_type === "Track trail") && !measurementValue) {
     setMessage("Please enter the trail width in metres.");
+    return;
+  }
+
+  if (observation_type === "Wet trail" && !wetTrailConditionValue) {
+    setMessage("Please select the wet trail condition.");
     return;
   }
 
@@ -506,6 +535,7 @@ saveButton.addEventListener("click", async () => {
     cairn_diameter: cairnDiameterValue,
     surface_condition: surfaceConditionValue,
     trail_architecture: trailArchitectureValue,
+    wet_trail_condition: wetTrailConditionValue,
     latitude: observation_type === "Track trail" ? trackingPoints[0][0] : currentPosition.latitude,
     longitude: observation_type === "Track trail" ? trackingPoints[0][1] : currentPosition.longitude,
     gps_accuracy: currentPosition.accuracy,
@@ -557,6 +587,7 @@ saveButton.addEventListener("click", async () => {
   cairnDiameter.value = "";
   surfaceCondition.value = "";
   trailArchitecture.value = "";
+  wetTrailCondition.value = "";
   trackingPoints = [];
   if (trackingPolyline) {
     map.removeLayer(trackingPolyline);

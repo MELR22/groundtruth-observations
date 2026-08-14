@@ -11,6 +11,7 @@ create table public.observations (
   measurement text,
   surface_condition text,
   trail_architecture text,
+  wet_trail_condition text,
   cairn_height text,
   cairn_diameter text,
   latitude double precision not null,
