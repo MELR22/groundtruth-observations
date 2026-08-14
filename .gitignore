@@ -1,1 +1,8 @@
 .DS_Store
+
+# Export data and generated files
+photos/
+by_type/
+observations.csv
+observations.json
+observations.geojson
