@@ -36,11 +36,11 @@ function setMessage(text, ok = false) {
 
 function updateCategoryUI() {
   const observationType = typeSelect.value;
-  
+
   // Trail width fields
   widthField.style.display = observationType === "Trail width" ? "block" : "none";
   if (observationType !== "Trail width") measurement.value = "";
-  
+
   // Cairn fields
   cairnHeight.style.display = observationType === "Cairn" ? "block" : "none";
   cairnDiameter.style.display = observationType === "Cairn" ? "block" : "none";
@@ -251,16 +251,30 @@ saveButton.addEventListener("click", async () => {
   const note = document.getElementById("note").value.trim();
   const group_name = document.getElementById("group").value;
   const observation_type = document.getElementById("type").value;
-  const measurementValue =
-    observation_type === "Trail width" ? measurement.value.trim() : "";
 
-  if (!note && !measurementValue && !selectedPhoto) {
+  let measurementValue = "";
+  let cairnHeightValue = "";
+  let cairnDiameterValue = "";
+
+  if (observation_type === "Trail width") {
+    measurementValue = measurement.value.trim();
+  } else if (observation_type === "Cairn") {
+    cairnHeightValue = cairnHeight.value.trim();
+    cairnDiameterValue = cairnDiameter.value.trim();
+  }
+
+  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !selectedPhoto) {
     setMessage("Please add a measurement, note, or photo.");
     return;
   }
 
   if (observation_type === "Trail width" && !measurementValue) {
     setMessage("Please enter the trail width in metres.");
+    return;
+  }
+
+  if (observation_type === "Cairn" && !cairnHeightValue && !cairnDiameterValue) {
+    setMessage("Please enter cairn height and/or diameter in metres.");
     return;
   }
 
@@ -272,6 +286,8 @@ saveButton.addEventListener("click", async () => {
     observation_type,
     note,
     measurement: measurementValue,
+    cairn_height: cairnHeightValue,
+    cairn_diameter: cairnDiameterValue,
     latitude: currentPosition.latitude,
     longitude: currentPosition.longitude,
     gps_accuracy: currentPosition.accuracy
@@ -318,6 +334,8 @@ saveButton.addEventListener("click", async () => {
 
   document.getElementById("note").value = "";
   measurement.value = "";
+  cairnHeight.value = "";
+  cairnDiameter.value = "";
   selectedPhoto = null;
   photoInput.value = "";
   previewImage.removeAttribute("src");
