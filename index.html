@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2f4249" />
+  <title>Ground Truth Observations</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <header>
+    <div class="brand-mark">R</div>
+    <div>
+      <h1>Ground Truth Observations</h1>
+      <p>GPS-based trail observations</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="card form-card">
+      <div class="section-title">
+        <span class="step">1</span>
+        <h2>New observation</h2>
+      </div>
+
+      <label for="group">Group</label>
+      <select id="group">
+        <option value="Group 1">Group 1</option>
+        <option value="Group 2">Group 2</option>
+        <option value="Group 3">Group 3</option>
+        <option value="Group 4">Group 4</option>
+      </select>
+
+      <div class="gps-status">
+        <div>
+          <strong>📍 GPS position</strong>
+          <div id="coordinates" class="small">Waiting for location…</div>
+        </div>
+        <span id="gpsStatus" class="accuracy">Waiting…</span>
+      </div>
+
+      <label for="type">Observation category</label>
+      <select id="type">
+        <option value="Trail width">Trail width</option>
+        <option value="Wet trail">Wet trail</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <div id="widthField">
+        <label for="measurement">Trail width <span>(optional)</span></label>
+        <div class="measurement-row">
+          <input id="measurement" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
+          <span>metres</span>
+        </div>
+      </div>
+
+      <label for="note">Note <span>(optional)</span></label>
+      <textarea id="note" rows="3" placeholder="Describe what you observe…"></textarea>
+
+      <label for="photo">Photo <span>(optional)</span></label>
+      <input id="photo" class="file-input" type="file" accept="image/*" capture="environment" />
+      <div id="photoPreview" class="photo-preview hidden">
+        <img id="previewImage" alt="Selected observation" />
+        <button type="button" id="removePhoto" class="secondary-button">Remove photo</button>
+      </div>
+
+      <button id="save">Save observation</button>
+      <div id="message" class="message"></div>
+    </section>
+
+    <section class="card map-card">
+      <div class="map-header">
+        <div class="section-title">
+          <span class="step">2</span>
+          <h2>Shared observations</h2>
+        </div>
+        <span id="count" class="count">0</span>
+      </div>
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
