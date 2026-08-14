@@ -42,11 +42,18 @@
         <span id="gpsStatus" class="accuracy">Waiting…</span>
       </div>
 
+      <div id="trackingControls" class="tracking-controls hidden">
+        <button type="button" id="startTracking" class="secondary-button">Start tracking</button>
+        <button type="button" id="stopTracking" class="secondary-button danger" disabled>End tracking</button>
+        <div id="trackingStatus" class="tracking-status">No route in progress</div>
+      </div>
+
       <label for="type">Observation category</label>
       <select id="type">
         <option value="Trail width">Trail width</option>
         <option value="Cairn">Cairn </option>
         <option value="Wet trail">Wet trail</option>
+        <option value="Track trail">Track trail</option>
         <option value="Other">Other</option>
       </select>
 
@@ -60,11 +67,9 @@
         <label for="surfaceCondition">Surface Condition</label>
         <select id="surfaceCondition">
           <option value="">-- Select one --</option>
-          <option value="Lightly Worn">Native vegetation is still visible, but clearly affected by trampling
-          </option>
-          <option value="Root Exposed">Only roots and bare branches of native vegetation still visible
-          </option>
-          <option value="Root Exposed">Mix of grass and barren soil</option>
+          <option value="Lightly Worn">Native vegetation is still visible, but clearly affected by trampling</option>
+          <option value="Root Exposed">Only roots and bare branches of native vegetation still visible</option>
+          <option value="Mixed grass and bare soil">Mix of grass and barren soil</option>
           <option value="Barren Core">Mostly barren soil</option>
         </select>
 

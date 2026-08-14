@@ -10,7 +10,9 @@
   --text: #27343a;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -40,8 +42,16 @@ header {
   font-size: 22px;
 }
 
-header h1 { margin: 0 0 2px; font-size: 21px; }
-header p { margin: 0; opacity: .82; font-size: 13px; }
+header h1 {
+  margin: 0 0 2px;
+  font-size: 21px;
+}
+
+header p {
+  margin: 0;
+  opacity: .82;
+  font-size: 13px;
+}
 
 main {
   max-width: 940px;
@@ -92,7 +102,9 @@ label span {
   color: var(--rissa-grey);
 }
 
-select, input, textarea {
+select,
+input,
+textarea {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 9px;
@@ -102,12 +114,16 @@ select, input, textarea {
   color: var(--text);
 }
 
-select:focus, input:focus, textarea:focus {
+select:focus,
+input:focus,
+textarea:focus {
   outline: 2px solid rgba(130, 178, 127, .35);
   border-color: var(--rissa-green);
 }
 
-textarea { resize: vertical; }
+textarea {
+  resize: vertical;
+}
 
 .gps-status {
   margin-top: 14px;
@@ -138,8 +154,14 @@ textarea { resize: vertical; }
   gap: 8px;
 }
 
-.measurement-row input { flex: 1; }
-.measurement-row span { color: var(--rissa-grey); font-weight: 650; }
+.measurement-row input {
+  flex: 1;
+}
+
+.measurement-row span {
+  color: var(--rissa-grey);
+  font-weight: 650;
+}
 
 .file-input {
   padding: 8px;
@@ -161,7 +183,9 @@ textarea { resize: vertical; }
   border-radius: 7px;
 }
 
-.hidden { display: none; }
+.hidden {
+  display: none;
+}
 
 .secondary-button {
   margin-top: 8px;
@@ -172,6 +196,26 @@ textarea { resize: vertical; }
   background: white;
   color: var(--rissa-dark);
   font-weight: 700;
+}
+
+.secondary-button.danger {
+  border-color: #efb0a7;
+  color: #8d2b23;
+  background: #fff5f2;
+}
+
+.tracking-controls {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f8faf7;
+}
+
+.tracking-status {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--rissa-grey);
 }
 
 button#save {
@@ -186,7 +230,9 @@ button#save {
   font-size: 16px;
 }
 
-button#save:disabled { opacity: .55; }
+button#save:disabled {
+  opacity: .55;
+}
 
 .message {
   margin-top: 10px;

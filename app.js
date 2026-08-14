@@ -14,6 +14,9 @@ let map = null;
 let markers = [];
 let userMarker = null;
 let selectedPhoto = null;
+let trackingTimer = null;
+let trackingPoints = [];
+let trackingPolyline = null;
 
 const gpsStatus = document.getElementById("gpsStatus");
 const coordinates = document.getElementById("coordinates");
@@ -32,6 +35,13 @@ const trailArchitecture = document.getElementById("trailArchitecture");
 const photoInput = document.getElementById("photo");
 const photoPreview = document.getElementById("photoPreview");
 const previewImage = document.getElementById("previewImage");
+const trackingControls = document.getElementById("trackingControls");
+const startTrackingButton = document.getElementById("startTracking");
+const stopTrackingButton = document.getElementById("stopTracking");
+const trackingStatus = document.getElementById("trackingStatus");
+
+const TRACK_SAMPLE_MS = 2000;
+const TRACK_MIN_DISTANCE_M = 5;
 
 function setMessage(text, ok = false) {
   message.textContent = text;
@@ -41,24 +51,117 @@ function setMessage(text, ok = false) {
 function updateCategoryUI() {
   const observationType = typeSelect.value;
 
-  // Trail width fields
-  widthField.style.display = observationType === "Trail width" ? "block" : "none";
-  if (observationType !== "Trail width") {
+  const widthTypes = ["Trail width", "Track trail"];
+  widthField.style.display = widthTypes.includes(observationType) ? "block" : "none";
+  if (!widthTypes.includes(observationType)) {
     measurement.value = "";
     surfaceCondition.value = "";
     trailArchitecture.value = "";
   }
 
-  // Cairn fields
   cairnHeightField.style.display = observationType === "Cairn" ? "block" : "none";
   cairnDiameterField.style.display = observationType === "Cairn" ? "block" : "none";
   if (observationType !== "Cairn") {
     cairnHeight.value = "";
     cairnDiameter.value = "";
   }
+
+  trackingControls.style.display = observationType === "Track trail" ? "block" : "none";
+  if (observationType !== "Track trail") {
+    stopTracking();
+  }
 }
 typeSelect.addEventListener("change", updateCategoryUI);
 updateCategoryUI();
+
+function distanceBetweenPoints(a, b) {
+  const toRad = value => (value * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const dLat = toRad(b[0] - a[0]);
+  const dLng = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]);
+  const lat2 = toRad(b[0]);
+
+  const hav =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+
+  return 2 * earthRadiusKm * 1000 * Math.asin(Math.sqrt(hav));
+}
+
+function renderTrackingLine() {
+  if (trackingPolyline) {
+    map.removeLayer(trackingPolyline);
+  }
+
+  if (trackingPoints.length >= 2 && map) {
+    trackingPolyline = L.polyline(trackingPoints, {
+      color: "#f59e0b",
+      weight: 4,
+      opacity: 0.9,
+      lineCap: "round",
+      lineJoin: "round"
+    }).addTo(map);
+  }
+}
+
+function stopTracking() {
+  if (trackingTimer) {
+    clearInterval(trackingTimer);
+    trackingTimer = null;
+  }
+
+  startTrackingButton.disabled = false;
+  stopTrackingButton.disabled = true;
+  trackingStatus.textContent = trackingPoints.length > 1
+    ? `Tracked route saved: ${trackingPoints.length} points`
+    : "No route in progress";
+
+  if (trackingPoints.length >= 2 && map) {
+    renderTrackingLine();
+  }
+}
+
+function startTracking() {
+  if (!navigator.geolocation) {
+    setMessage("GPS is not supported in this browser.");
+    return;
+  }
+
+  if (!currentPosition) {
+    setMessage("Waiting for a GPS fix before starting a tracked trail.");
+    return;
+  }
+
+  trackingPoints = [[currentPosition.latitude, currentPosition.longitude]];
+  renderTrackingLine();
+
+  trackingStatus.textContent = "Tracking in progress…";
+  startTrackingButton.disabled = true;
+  stopTrackingButton.disabled = false;
+
+  trackingTimer = setInterval(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const latest = trackingPoints[trackingPoints.length - 1];
+      if (!latest || distanceBetweenPoints(latest, [lat, lng]) > TRACK_MIN_DISTANCE_M) {
+        trackingPoints.push([lat, lng]);
+        renderTrackingLine();
+        trackingStatus.textContent = `Tracking in progress… ${trackingPoints.length} points`;
+      }
+    }, gpsError, {
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 15000
+    });
+  }, TRACK_SAMPLE_MS);
+}
+
+startTrackingButton.addEventListener("click", startTracking);
+stopTrackingButton.addEventListener("click", () => {
+  stopTracking();
+});
 
 function initMap(lat = 69.64, lon = 18.99) {
   map = L.map("map").setView([lat, lon], 13);
@@ -243,11 +346,44 @@ async function loadObservations() {
 function addMarker(o) {
   if (!map) initMap(o.latitude, o.longitude);
 
-  // Determine marker color based on observation type
+  const date = new Date(o.created_at).toLocaleString();
+  const photo = o.photo_url
+    ? `<img class="popup-photo" src="${escapeAttr(o.photo_url)}" alt="Observation photo">`
+    : "";
+
+  if (o.observation_type === "Track trail") {
+    const points = typeof o.track_points === "string"
+      ? JSON.parse(o.track_points)
+      : (o.track_points || []);
+
+    if (Array.isArray(points) && points.length >= 2) {
+      const line = L.polyline(points.map(([lat, lng]) => [lat, lng]), {
+        color: "#f59e0b",
+        weight: 4,
+        opacity: 0.9,
+        lineCap: "round",
+        lineJoin: "round"
+      }).addTo(map);
+
+      line.bindPopup(`
+        <strong>${escapeHtml(o.group_name)}</strong><br>
+        ${escapeHtml(o.observation_type)}<br>
+        ${o.measurement ? `<b>Width:</b> ${escapeHtml(o.measurement)} m<br>` : ""}
+        ${o.note ? `${escapeHtml(o.note)}<br>` : ""}
+        ${photo}
+        <small>${date}<br>Route points: ${points.length}</small>
+      `);
+
+      markers.push(line);
+    }
+    return;
+  }
+
   const markerColors = {
-    "Trail width": "#ef4444",      // Red
-    "Cairn": "#3b82f6",             // Blue
-    "default": "#6b7280"            // Gray
+    "Trail width": "#ef4444",
+    "Cairn": "#3b82f6",
+    "Wet trail": "#10b981",
+    "default": "#6b7280"
   };
   const markerColor = markerColors[o.observation_type] || markerColors["default"];
 
@@ -258,12 +394,6 @@ function addMarker(o) {
     fillOpacity: 0.7,
     weight: 2
   }).addTo(map);
-
-  const date = new Date(o.created_at).toLocaleString();
-
-  const photo = o.photo_url
-    ? `<img class="popup-photo" src="${escapeAttr(o.photo_url)}" alt="Observation photo">`
-    : "";
 
   const measurementText =
     o.observation_type === "Trail width" && o.measurement
@@ -321,8 +451,9 @@ saveButton.addEventListener("click", async () => {
   let cairnDiameterValue = "";
   let surfaceConditionValue = "";
   let trailArchitectureValue = "";
+  let trackData = null;
 
-  if (observation_type === "Trail width") {
+  if (observation_type === "Trail width" || observation_type === "Tracked trail") {
     measurementValue = measurement.value.trim();
     surfaceConditionValue = surfaceCondition.value.trim();
     trailArchitectureValue = trailArchitecture.value.trim();
@@ -331,12 +462,20 @@ saveButton.addEventListener("click", async () => {
     cairnDiameterValue = cairnDiameter.value.trim();
   }
 
-  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !surfaceConditionValue && !trailArchitectureValue && !selectedPhoto) {
-    setMessage("Please add a measurement, note, or photo.");
+  if (observation_type === "Track trail") {
+    if (trackingPoints.length < 2) {
+      setMessage("Please start and finish tracking a route before saving.");
+      return;
+    }
+    trackData = JSON.stringify(trackingPoints);
+  }
+
+  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !surfaceConditionValue && !trailArchitectureValue && !selectedPhoto && !trackData) {
+    setMessage("Please add a measurement, note, photo, or tracked trail.");
     return;
   }
 
-  if (observation_type === "Trail width" && !measurementValue) {
+  if ((observation_type === "Trail width" || observation_type === "Track trail") && !measurementValue) {
     setMessage("Please enter the trail width in metres.");
     return;
   }
@@ -358,9 +497,10 @@ saveButton.addEventListener("click", async () => {
     cairn_diameter: cairnDiameterValue,
     surface_condition: surfaceConditionValue,
     trail_architecture: trailArchitectureValue,
-    latitude: currentPosition.latitude,
-    longitude: currentPosition.longitude,
-    gps_accuracy: currentPosition.accuracy
+    latitude: observation_type === "Track trail" ? trackingPoints[0][0] : currentPosition.latitude,
+    longitude: observation_type === "Track trail" ? trackingPoints[0][1] : currentPosition.longitude,
+    gps_accuracy: currentPosition.accuracy,
+    track_points: trackData
   };
 
   const { data, error } = await supabaseClient
@@ -408,6 +548,14 @@ saveButton.addEventListener("click", async () => {
   cairnDiameter.value = "";
   surfaceCondition.value = "";
   trailArchitecture.value = "";
+  trackingPoints = [];
+  if (trackingPolyline) {
+    map.removeLayer(trackingPolyline);
+    trackingPolyline = null;
+  }
+  trackingStatus.textContent = "No route in progress";
+  stopTrackingButton.disabled = true;
+  startTrackingButton.disabled = false;
   selectedPhoto = null;
   photoInput.value = "";
   previewImage.removeAttribute("src");

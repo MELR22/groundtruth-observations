@@ -5,7 +5,7 @@ create table public.observations (
   created_at timestamptz not null default now(),
   group_name text not null,
   observation_type text not null check (
-    observation_type in ('Trail width', 'Cairn', 'Wet trail', 'Other')
+    observation_type in ('Trail width', 'Cairn', 'Wet trail', 'Track trail', 'Other')
   ),
   note text,
   measurement text,
@@ -16,7 +16,8 @@ create table public.observations (
   latitude double precision not null,
   longitude double precision not null,
   gps_accuracy double precision not null,
-  photo_url text
+  photo_url text,
+  track_points jsonb
 );
 
 alter table public.observations enable row level security;
