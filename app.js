@@ -22,6 +22,8 @@ const message = document.getElementById("message");
 const count = document.getElementById("count");
 const typeSelect = document.getElementById("type");
 const widthField = document.getElementById("widthField");
+const cairnHeightField = document.getElementById("cairnHeightField");
+const cairnDiameterField = document.getElementById("cairnDiameterField");
 const cairnHeight = document.getElementById("cairnHeight");
 const cairnDiameter = document.getElementById("cairnDiameter");
 const measurement = document.getElementById("measurement");
@@ -48,8 +50,8 @@ function updateCategoryUI() {
   }
 
   // Cairn fields
-  cairnHeight.style.display = observationType === "Cairn" ? "block" : "none";
-  cairnDiameter.style.display = observationType === "Cairn" ? "block" : "none";
+  cairnHeightField.style.display = observationType === "Cairn" ? "block" : "none";
+  cairnDiameterField.style.display = observationType === "Cairn" ? "block" : "none";
   if (observationType !== "Cairn") {
     cairnHeight.value = "";
     cairnDiameter.value = "";

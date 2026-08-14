@@ -60,21 +60,23 @@
         <label for="surfaceCondition">Surface Condition</label>
         <select id="surfaceCondition">
           <option value="">-- Select one --</option>
-          <option value="Lightly Worn">Lightly Worn: Native vegetation is visible but clearly affected by trampling
+          <option value="Lightly Worn">Native vegetation is still visible, but clearly affected by trampling
           </option>
-          <option value="Root Exposed">Root Exposed: Soil is eroding; roots and branches are showing</option>
-          <option value="Barren Core">Barren Core: Main path has degraded to a mix of grass and barren soil</option>
+          <option value="Root Exposed">Soil is eroding; roots and bare branches of native vegetation still there
+          </option>
+          <option value="Root Exposed">Mix of grass and barren soil</option>
+          <option value="Barren Core">Main path has degraded barren soil</option>
         </select>
 
         <label for="trailArchitecture">Trail Architecture</label>
         <select id="trailArchitecture">
           <option value="">-- Select one --</option>
-          <option value="Single trail">Single trail: Traffic is confined to a single distinct path</option>
-          <option value="Braided/Parallel trail">Braided/Parallel trail: Multiple parallel trails have formed</option>
+          <option value="Single trail">Single trail: single distinct trail</option>
+          <option value="Braided/Parallel trail">Braided/parallel trails: Multiple parallel trails</option>
         </select>
       </div>
 
-      <div id="cairnHeight">
+      <div id="cairnHeightField">
         <label for="cairnHeight">Cairn height (in meter)</label>
         <div class="measurement-row">
           <input id="cairnHeight" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
@@ -82,7 +84,7 @@
         </div>
       </div>
 
-      <div id="cairnDiameter">
+      <div id="cairnDiameterField">
         <label for="cairnDiameter">Cairn diameter (in meter)</label>
         <div class="measurement-row">
           <input id="cairnDiameter" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
