@@ -60,7 +60,7 @@
       <div id="widthField">
         <label for="measurement">Trail width (in meter)</label>
         <div class="measurement-row">
-          <input id="measurement" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
+          <input id="measurement" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="e.g. 1.25" />
           <span>metres</span>
         </div>
 
@@ -94,7 +94,7 @@
       <div id="cairnHeightField">
         <label for="cairnHeight">Cairn height (in meter)</label>
         <div class="measurement-row">
-          <input id="cairnHeight" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
+          <input id="cairnHeight" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="e.g. 1.25" />
           <span>metres</span>
         </div>
       </div>
@@ -102,7 +102,8 @@
       <div id="cairnDiameterField">
         <label for="cairnDiameter">Cairn diameter (in meter)</label>
         <div class="measurement-row">
-          <input id="cairnDiameter" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
+          <input id="cairnDiameter" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*"
+            placeholder="e.g. 1.25" />
           <span>metres</span>
         </div>
       </div>

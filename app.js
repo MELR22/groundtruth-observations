@@ -45,6 +45,18 @@ const trackingStatus = document.getElementById("trackingStatus");
 const TRACK_SAMPLE_MS = 500;
 const TRACK_MIN_DISTANCE_M = 2;
 
+function normalizeDecimalInput(value) {
+  if (value === null || value === undefined) return "";
+  return String(value).replace(",", ".").trim();
+}
+
+function sanitizeNumericField(field) {
+  if (!field) return "";
+  const normalized = normalizeDecimalInput(field.value);
+  field.value = normalized;
+  return normalized;
+}
+
 function setMessage(text, ok = false) {
   message.textContent = text;
   message.style.color = ok ? "#3e7a48" : "#a33a2b";
@@ -485,12 +497,12 @@ saveButton.addEventListener("click", async () => {
   let trackData = null;
 
   if (observation_type === "Trail width" || observation_type === "Track trail") {
-    measurementValue = measurement.value.trim();
+    measurementValue = sanitizeNumericField(measurement);
     surfaceConditionValue = surfaceCondition.value.trim();
     trailArchitectureValue = trailArchitecture.value.trim();
   } else if (observation_type === "Cairn") {
-    cairnHeightValue = cairnHeight.value.trim();
-    cairnDiameterValue = cairnDiameter.value.trim();
+    cairnHeightValue = sanitizeNumericField(cairnHeight);
+    cairnDiameterValue = sanitizeNumericField(cairnDiameter);
   } else if (observation_type === "Wet trail") {
     wetTrailConditionValue = wetTrailCondition.value.trim();
   }
