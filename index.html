@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +9,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
+
 <body>
   <header>
     <div class="brand-mark">R</div>
@@ -43,20 +45,34 @@
       <label for="type">Observation category</label>
       <select id="type">
         <option value="Trail width">Trail width</option>
+        <option value="Cairn">Cairn </option>
         <option value="Wet trail">Wet trail</option>
         <option value="Other">Other</option>
       </select>
 
       <div id="widthField">
-        <label for="measurement">Trail width <span>(optional)</span></label>
+        <label for="measurement">Trail width (in meter)</label>
         <div class="measurement-row">
           <input id="measurement" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
           <span>metres</span>
         </div>
       </div>
 
-      <label for="note">Note <span>(optional)</span></label>
-      <textarea id="note" rows="3" placeholder="Describe what you observe…"></textarea>
+      <div id="cairnHeight">
+        <label for="measurement">Cairn height (in meter)</label>
+        <div class="measurement-row">
+          <input id="measurement" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
+          <span>metres</span>
+        </div>
+      </div>
+
+      <div id="cairnDiameter">
+        <label for="measurement">Cairn diameter (in meter)</label>
+        <div class="measurement-row">
+          <input id="measurement" type="number" min="0" step="0.01" placeholder="e.g. 1.25" inputmode="decimal" />
+          <span>metres</span>
+        </div>
+      </div>
 
       <label for="photo">Photo <span>(optional)</span></label>
       <input id="photo" class="file-input" type="file" accept="image/*" capture="environment" />
@@ -86,4 +102,5 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>

@@ -22,6 +22,8 @@ const message = document.getElementById("message");
 const count = document.getElementById("count");
 const typeSelect = document.getElementById("type");
 const widthField = document.getElementById("widthField");
+const cairnHeight = document.getElementById("cairnHeight");
+const cairnDiameter = document.getElementById("cairnDiameter");
 const measurement = document.getElementById("measurement");
 const photoInput = document.getElementById("photo");
 const photoPreview = document.getElementById("photoPreview");
@@ -33,14 +35,20 @@ function setMessage(text, ok = false) {
 }
 
 function updateCategoryUI() {
-  const isWidth = typeSelect.value === "Trail width";
-  widthField.style.display = isWidth ? "block" : "none";
-  if (!isWidth) measurement.value = "";
+  const observationType = typeSelect.value;
+  
+  // Trail width fields
+  widthField.style.display = observationType === "Trail width" ? "block" : "none";
+  if (observationType !== "Trail width") measurement.value = "";
+  
+  // Cairn fields
+  cairnHeight.style.display = observationType === "Cairn" ? "block" : "none";
+  cairnDiameter.style.display = observationType === "Cairn" ? "block" : "none";
 }
 typeSelect.addEventListener("change", updateCategoryUI);
 updateCategoryUI();
 
-function initMap(lat = 69.65, lon = 18.95) {
+function initMap(lat = 69.64, lon = 18.99) {
   map = L.map("map").setView([lat, lon], 13);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
@@ -104,7 +112,7 @@ document.getElementById("removePhoto").addEventListener("click", () => {
 
 async function compressPhoto(file) {
   const bitmap = await createImageBitmap(file);
-  const maxSize = 1600;
+  const maxSize = 800;
   const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
@@ -117,6 +125,7 @@ async function compressPhoto(file) {
     canvas.toBlob(resolve, "image/jpeg", 0.82)
   );
 }
+
 
 async function uploadPhoto(file, observationId) {
   const blob = await compressPhoto(file);
@@ -170,7 +179,22 @@ async function loadObservations() {
 function addMarker(o) {
   if (!map) initMap(o.latitude, o.longitude);
 
-  const marker = L.marker([o.latitude, o.longitude]).addTo(map);
+  // Determine marker color based on observation type
+  const markerColors = {
+    "Trail width": "#ef4444",      // Red
+    "Cairn": "#3b82f6",             // Blue
+    "default": "#6b7280"            // Gray
+  };
+  const markerColor = markerColors[o.observation_type] || markerColors["default"];
+
+  const marker = L.circleMarker([o.latitude, o.longitude], {
+    radius: 8,
+    color: markerColor,
+    fillColor: markerColor,
+    fillOpacity: 0.7,
+    weight: 2
+  }).addTo(map);
+
   const date = new Date(o.created_at).toLocaleString();
 
   const photo = o.photo_url
@@ -182,10 +206,16 @@ function addMarker(o) {
       ? `<b>Width:</b> ${escapeHtml(o.measurement)} m<br>`
       : "";
 
+  const cairnText =
+    o.observation_type === "Cairn"
+      ? `${o.cairn_height ? `<b>Height:</b> ${escapeHtml(o.cairn_height)} m<br>` : ""}${o.cairn_diameter ? `<b>Diameter:</b> ${escapeHtml(o.cairn_diameter)} m<br>` : ""}`
+      : "";
+
   marker.bindPopup(`
     <strong>${escapeHtml(o.group_name)}</strong><br>
     ${escapeHtml(o.observation_type)}<br>
     ${measurementText}
+    ${cairnText}
     ${o.note ? `${escapeHtml(o.note)}<br>` : ""}
     ${photo}
     <small>${date}<br>GPS accuracy: ${Math.round(o.gps_accuracy)} m</small>
