@@ -25,6 +25,8 @@ const widthField = document.getElementById("widthField");
 const cairnHeight = document.getElementById("cairnHeight");
 const cairnDiameter = document.getElementById("cairnDiameter");
 const measurement = document.getElementById("measurement");
+const surfaceCondition = document.getElementById("surfaceCondition");
+const trailArchitecture = document.getElementById("trailArchitecture");
 const photoInput = document.getElementById("photo");
 const photoPreview = document.getElementById("photoPreview");
 const previewImage = document.getElementById("previewImage");
@@ -39,11 +41,19 @@ function updateCategoryUI() {
 
   // Trail width fields
   widthField.style.display = observationType === "Trail width" ? "block" : "none";
-  if (observationType !== "Trail width") measurement.value = "";
+  if (observationType !== "Trail width") {
+    measurement.value = "";
+    surfaceCondition.value = "";
+    trailArchitecture.value = "";
+  }
 
   // Cairn fields
   cairnHeight.style.display = observationType === "Cairn" ? "block" : "none";
   cairnDiameter.style.display = observationType === "Cairn" ? "block" : "none";
+  if (observationType !== "Cairn") {
+    cairnHeight.value = "";
+    cairnDiameter.value = "";
+  }
 }
 typeSelect.addEventListener("change", updateCategoryUI);
 updateCategoryUI();
@@ -255,15 +265,19 @@ saveButton.addEventListener("click", async () => {
   let measurementValue = "";
   let cairnHeightValue = "";
   let cairnDiameterValue = "";
+  let surfaceConditionValue = "";
+  let trailArchitectureValue = "";
 
   if (observation_type === "Trail width") {
     measurementValue = measurement.value.trim();
+    surfaceConditionValue = surfaceCondition.value.trim();
+    trailArchitectureValue = trailArchitecture.value.trim();
   } else if (observation_type === "Cairn") {
     cairnHeightValue = cairnHeight.value.trim();
     cairnDiameterValue = cairnDiameter.value.trim();
   }
 
-  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !selectedPhoto) {
+  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !surfaceConditionValue && !trailArchitectureValue && !selectedPhoto) {
     setMessage("Please add a measurement, note, or photo.");
     return;
   }
@@ -288,6 +302,8 @@ saveButton.addEventListener("click", async () => {
     measurement: measurementValue,
     cairn_height: cairnHeightValue,
     cairn_diameter: cairnDiameterValue,
+    surface_condition: surfaceConditionValue,
+    trail_architecture: trailArchitectureValue,
     latitude: currentPosition.latitude,
     longitude: currentPosition.longitude,
     gps_accuracy: currentPosition.accuracy
@@ -336,6 +352,8 @@ saveButton.addEventListener("click", async () => {
   measurement.value = "";
   cairnHeight.value = "";
   cairnDiameter.value = "";
+  surfaceCondition.value = "";
+  trailArchitecture.value = "";
   selectedPhoto = null;
   photoInput.value = "";
   previewImage.removeAttribute("src");
