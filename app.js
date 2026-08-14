@@ -40,8 +40,8 @@ const startTrackingButton = document.getElementById("startTracking");
 const stopTrackingButton = document.getElementById("stopTracking");
 const trackingStatus = document.getElementById("trackingStatus");
 
-const TRACK_SAMPLE_MS = 2000;
-const TRACK_MIN_DISTANCE_M = 5;
+const TRACK_SAMPLE_MS = 500;
+const TRACK_MIN_DISTANCE_M = 2;
 
 function setMessage(text, ok = false) {
   message.textContent = text;
@@ -113,9 +113,16 @@ function stopTracking() {
 
   startTrackingButton.disabled = false;
   stopTrackingButton.disabled = true;
-  trackingStatus.textContent = trackingPoints.length > 1
-    ? `Tracked route saved: ${trackingPoints.length} points`
-    : "No route in progress";
+
+  if (trackingPoints.length > 1) {
+    trackingStatus.textContent = `Route complete: ${trackingPoints.length} points captured`;
+    trackingStatus.style.color = "#3e7a48";
+    trackingStatus.style.fontWeight = "700";
+  } else {
+    trackingStatus.textContent = "No route in progress";
+    trackingStatus.style.color = "#858995";
+    trackingStatus.style.fontWeight = "500";
+  }
 
   if (trackingPoints.length >= 2 && map) {
     renderTrackingLine();
@@ -129,7 +136,7 @@ function startTracking() {
   }
 
   if (!currentPosition) {
-    setMessage("Waiting for a GPS fix before starting a tracked trail.");
+    setMessage("Waiting for a GPS fix before starting a track trail.");
     return;
   }
 
@@ -137,6 +144,8 @@ function startTracking() {
   renderTrackingLine();
 
   trackingStatus.textContent = "Tracking in progress…";
+  trackingStatus.style.color = "#9a5b00";
+  trackingStatus.style.fontWeight = "700";
   startTrackingButton.disabled = true;
   stopTrackingButton.disabled = false;
 
@@ -453,7 +462,7 @@ saveButton.addEventListener("click", async () => {
   let trailArchitectureValue = "";
   let trackData = null;
 
-  if (observation_type === "Trail width" || observation_type === "Tracked trail") {
+  if (observation_type === "Trail width" || observation_type === "Track trail") {
     measurementValue = measurement.value.trim();
     surfaceConditionValue = surfaceCondition.value.trim();
     trailArchitectureValue = trailArchitecture.value.trim();
@@ -471,7 +480,7 @@ saveButton.addEventListener("click", async () => {
   }
 
   if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !surfaceConditionValue && !trailArchitectureValue && !selectedPhoto && !trackData) {
-    setMessage("Please add a measurement, note, photo, or tracked trail.");
+    setMessage("Please add a measurement, note, photo, or track trail.");
     return;
   }
 
@@ -554,6 +563,8 @@ saveButton.addEventListener("click", async () => {
     trackingPolyline = null;
   }
   trackingStatus.textContent = "No route in progress";
+  trackingStatus.style.color = "#858995";
+  trackingStatus.style.fontWeight = "500";
   stopTrackingButton.disabled = true;
   startTrackingButton.disabled = false;
   selectedPhoto = null;
