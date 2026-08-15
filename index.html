@@ -112,7 +112,10 @@
       <textarea id="note" placeholder="Add any additional notes or observations..." rows="4"></textarea>
 
       <label for="photo">Photo <span>(optional)</span></label>
-      <input id="photo" class="file-input" type="file" accept="image/*" capture="environment" />
+      <button id="photoButton" type="button" class="photo-picker-button">Take a photo</button>
+      <input id="photo" class="file-input hidden-file-input" type="file" accept="image/*" capture="environment" />
+      <div class="photo-help">If your browser asks for camera access, allow it. You can also choose an existing image.
+      </div>
       <div id="photoPreview" class="photo-preview hidden">
         <img id="previewImage" alt="Selected observation" />
         <button type="button" id="removePhoto" class="secondary-button">Remove photo</button>

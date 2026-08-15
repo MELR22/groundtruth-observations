@@ -168,6 +168,30 @@ textarea {
   background: #fafbf9;
 }
 
+.hidden-file-input {
+  display: none;
+}
+
+.photo-picker-button {
+  width: 100%;
+  margin-top: 6px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #edf4eb;
+  color: var(--rissa-dark);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.photo-help {
+  margin-top: 6px;
+  color: var(--rissa-grey);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .photo-preview {
   margin-top: 9px;
   border: 1px solid var(--border);
