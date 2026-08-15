@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#%%!/usr/bin/env python3
 """
 Export and process Ground Truth Observations data from Supabase.
 """
@@ -6,6 +6,7 @@ Export and process Ground Truth Observations data from Supabase.
 import os
 import json
 import csv
+import ast
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -14,7 +15,7 @@ import requests
 from supabase import create_client
 import geopandas as gpd
 import pandas as pd
-from shapely.geometry import Point
+from shapely.geometry import Point, LineString
 
 
 def load_config():
@@ -85,7 +86,7 @@ def download_photos(supabase_client, observations, output_dir="photos"):
     return photos_dir
 
 
-def export_to_json(observations, output_file="observations.json"):
+def export_to_json(observations, output_file=r"./data/observations.json"):
     """Export observations to JSON"""
     print(f"Exporting to {output_file}...")
     
@@ -122,18 +123,20 @@ def export_by_type(observations, output_dir="by_type"):
         print(f"✓ Exported {len(obs_list)} {obs_type} observations to {filename}")
 
 
-def create_geodataframe(observations, output_file="observations.geojson"):
-    """Create a GeoDataFrame and export to GeoJSON"""
+def create_geodataframes(observations):
+    """Create separate GeoDataFrames for track trails and point observations."""
 
-    print(f"Creating GeoDataFrame and exporting to {output_file}...")
-    
-    # Convert to list of dicts with Point geometry
-    data = []
+    track_data = []
+    point_data = []
+
     for obs in observations:
-        data.append({
+        observation_type = obs.get('observation_type')
+
+        # Common attributes
+        properties = {
             'id': obs.get('id'),
             'group_name': obs.get('group_name'),
-            'observation_type': obs.get('observation_type'),
+            'observation_type': observation_type,
             'measurement': obs.get('measurement'),
             'cairn_height': obs.get('cairn_height'),
             'cairn_diameter': obs.get('cairn_diameter'),
@@ -143,19 +146,61 @@ def create_geodataframe(observations, output_file="observations.geojson"):
             'gps_accuracy': obs.get('gps_accuracy'),
             'created_at': obs.get('created_at'),
             'photo_url': obs.get('photo_url'),
-            'geometry': Point(obs.get('longitude', 0), obs.get('latitude', 0))
-        })
-    
-    # Create GeoDataFrame
-    gdf = gpd.GeoDataFrame(data, crs="EPSG:4326")
-    
-    # Export to GeoJSON
-    gdf.to_file(output_file, driver='GeoJSON')
-    print(f"✓ Created GeoDataFrame with {len(gdf)} observations")
-    print(f"✓ Exported to {output_file}")
-    
-    return gdf
+        }
 
+        # -------------------------
+        # TRACK TRAIL
+        # -------------------------
+        if observation_type == "Track trail":
+
+            track_string = obs.get('track_points')
+            track = ast.literal_eval(track_string)
+
+            if len(track) < 2:
+                print(
+                    f"⚠ Skipping track trail {obs.get('id')}: "
+                    "fewer than 2 GPS points"
+                )
+                continue
+
+            line = LineString([
+                (lon, lat)
+                for lat, lon in track
+            ])
+
+            properties['geometry'] = line
+            track_data.append(properties)
+
+        # -------------------------
+        # ALL OTHER OBSERVATIONS
+        # -------------------------
+        else:
+            longitude = obs.get('longitude')
+            latitude = obs.get('latitude')
+
+            if longitude is None or latitude is None:
+                print(
+                    f"⚠ Skipping observation {obs.get('id')}: "
+                    "missing longitude/latitude"
+                )
+                continue
+            properties['geometry'] = Point(longitude, latitude)
+            point_data.append(properties)
+
+    # Create GeoDataFrames
+    track_gdf = gpd.GeoDataFrame(
+        track_data,
+        geometry='geometry',
+        crs="EPSG:4326"
+    )
+
+    point_gdf = gpd.GeoDataFrame(
+        point_data,
+        geometry='geometry',
+        crs="EPSG:4326"
+    )
+
+    return track_gdf, point_gdf
 
 def print_summary(observations):
     """Print a summary of observations"""
@@ -209,19 +254,25 @@ def main():
         if not observations:
             print("No data to export")
             return
-        
-        # Export data
-        print("\nExporting data...")
-        #export_to_json(observations)
-        #export_by_type(observations)
+
         
         # Create GeoDataFrame
-        try:
-            gpd = create_geodataframe(observations)
-        except Exception as e:
-            print(f"✗ Error creating GeoDataFrame: {e}")
+       # try:
+        track_gdf, point_gdf = create_geodataframes(observations)
 
-        gpd.to_file("bla.shp")
+        track_gdf.to_file(
+            r"./data/track_trails.geojson",
+            driver="GeoJSON"
+        )
+
+        point_gdf.to_file(
+            r"./data/observations.geojson",
+            driver="GeoJSON"
+        )
+        #except Exception as e:
+        #    print(f"✗ Error creating GeoDataFrame: {e}")
+
+
         # Download photos
         try:
             download_photos(supabase, observations)
@@ -243,3 +294,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# %%

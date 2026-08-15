@@ -3,6 +3,7 @@
 # Export data and generated files
 photos/
 by_type/
+data/
 observations.csv
 observations.json
 observations.geojson
