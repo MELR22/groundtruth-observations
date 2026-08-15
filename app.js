@@ -252,25 +252,6 @@ function startGPS() {
   });
 }
 
-async function openPhotoPicker() {
-  if (navigator.permissions && navigator.permissions.query) {
-    try {
-      const cameraPermission = await navigator.permissions.query({ name: "camera" });
-      if (cameraPermission.state === "denied") {
-        setMessage("Camera access is blocked in this browser. Please allow camera access or choose an existing photo from your device.");
-      } else if (cameraPermission.state === "prompt") {
-        setMessage("Please allow camera access when your browser asks, or choose an existing photo.");
-      }
-    } catch (error) {
-      // Ignore unsupported permission checks and continue to the file picker.
-    }
-  }
-
-  photoInput.click();
-}
-
-photoButton.addEventListener("click", openPhotoPicker);
-
 photoInput.addEventListener("change", () => {
   const file = photoInput.files?.[0];
   if (!file) return;
