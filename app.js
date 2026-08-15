@@ -211,58 +211,6 @@ function initMap(lat = 69.64, lon = 18.99) {
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
-
-  // Load subzones GeoJSON
-  loadSubzones();
-}
-
-function loadSubzones() {
-  // Fetch the subzone.geojson file
-  console.log("Loading subzones from subzone.geojson...");
-
-  fetch("./subzones.geojson")
-    .then(response => {
-      console.log("Response status:", response.status);
-      if (!response.ok) {
-        console.error("Failed to load subzone.geojson - file not found or not accessible");
-        return null;
-      }
-      return response.json();
-    })
-    .then(geojson => {
-      if (!geojson) {
-        console.warn("No GeoJSON data loaded");
-        return;
-      }
-
-      console.log("Loaded subzones:", geojson);
-
-      // Style the GeoJSON features
-      const subzoneLayer = L.geoJSON(geojson, {
-        style: {
-          color: "#000000",           // Border color
-          weight: 2,                   // Border width
-          opacity: 1,                  // Border opacity
-          fillColor: "#8b5cf6",        // Fill color (purple)
-          fillOpacity: 0.1             // Fill transparency (10%)
-        },
-        onEachFeature: (feature, layer) => {
-          // Add popup with feature properties
-          if (feature.properties) {
-            const props = Object.entries(feature.properties)
-              .map(([key, value]) => `<b>${key}:</b> ${value}`)
-              .join("<br>");
-            layer.bindPopup(props);
-          }
-        }
-      });
-
-      subzoneLayer.addTo(map);
-      console.log("Subzones displayed on map");
-    })
-    .catch(error => {
-      console.error("Error loading subzone.geojson:", error);
-    });
 }
 
 function updatePosition(position) {
@@ -506,7 +454,7 @@ saveButton.addEventListener("click", async () => {
   }
 
   const note = document.getElementById("note").value.trim();
-  const group_name = document.getElementById("group").value;
+  const group_name = "Group 1";
   const observation_type = document.getElementById("type").value;
 
   let measurementValue = "";
