@@ -25,15 +25,11 @@ const message = document.getElementById("message");
 const count = document.getElementById("count");
 const typeSelect = document.getElementById("type");
 const widthField = document.getElementById("widthField");
-const cairnHeightField = document.getElementById("cairnHeightField");
-const cairnDiameterField = document.getElementById("cairnDiameterField");
-const cairnHeight = document.getElementById("cairnHeight");
-const cairnDiameter = document.getElementById("cairnDiameter");
-const measurement = document.getElementById("measurement");
-const surfaceCondition = document.getElementById("surfaceCondition");
-const trailArchitecture = document.getElementById("trailArchitecture");
+const widthCategory = document.getElementById("widthCategory");
 const wetTrailConditionField = document.getElementById("wetTrailConditionField");
 const wetTrailCondition = document.getElementById("wetTrailCondition");
+const erosionTypeField = document.getElementById("erosionTypeField");
+const erosionType = document.getElementById("erosionType");
 const photoInput = document.getElementById("photo");
 const photoButton = document.getElementById("photoButton");
 const photoPreview = document.getElementById("photoPreview");
@@ -47,9 +43,26 @@ const TRACK_SAMPLE_MS = 500;
 const TRACK_MIN_DISTANCE_M = 2;
 
 const TASK_GEOJSONS = [
-  { file: "tasks/GT_task1.geojson", color: "#2563eb", label: "Task 1" },
-  { file: "tasks/GT_task2.geojson", color: "#16a34a", label: "Task 2" }
+  { file: "tasks/GT_task1.geojson", color: "#2563eb", label: "Task 1", dashed: true },
+  { file: "tasks/GT_task2.geojson", color: "#16a34a", label: "Task 2", dashed: true }
 ];
+
+const TRACKING_TASKS = [
+  "Track >1 m wide sections",
+  "Track and measure width",
+  "Track faint trails"
+];
+
+const TRACKING_TASK_COLORS = {
+  "Track >1 m wide sections": "#2563eb",
+  "Track and measure width": "#16a34a",
+  "Track faint trails": "#8b5cf6"
+};
+
+const POINT_OBSERVATION_COLORS = {
+  "Mark wet trail": "#10b981",
+  "Mark erosion": "#f59e0b"
+};
 
 let taskLayers = [];
 
@@ -73,42 +86,27 @@ function setMessage(text, ok = false) {
 function updateCategoryUI() {
   const observationType = typeSelect.value;
 
-  const widthTypes = ["Trail width", "Track trail"];
-  widthField.style.display = widthTypes.includes(observationType) ? "block" : "none";
-  if (!widthTypes.includes(observationType)) {
-    measurement.value = "";
-    surfaceCondition.value = "";
-    trailArchitecture.value = "";
+  const showWidthField = observationType === "Track and measure width";
+  widthField.style.display = showWidthField ? "block" : "none";
+  if (!showWidthField) {
+    widthCategory.value = "";
   }
 
-  const showWidthExtras = observationType === "Trail width";
-  const surfaceLabel = surfaceCondition.previousElementSibling;
-  const architectureLabel = trailArchitecture.previousElementSibling;
-
-  surfaceCondition.style.display = showWidthExtras ? "block" : "none";
-  if (surfaceLabel) surfaceLabel.style.display = showWidthExtras ? "block" : "none";
-  trailArchitecture.style.display = showWidthExtras ? "block" : "none";
-  if (architectureLabel) architectureLabel.style.display = showWidthExtras ? "block" : "none";
-
-  if (!showWidthExtras) {
-    surfaceCondition.value = "";
-    trailArchitecture.value = "";
-  }
-
-  wetTrailConditionField.style.display = observationType === "Wet trail" ? "block" : "none";
-  if (observationType !== "Wet trail") {
+  const showWetTrailField = observationType === "Mark wet trail";
+  wetTrailConditionField.style.display = showWetTrailField ? "block" : "none";
+  if (!showWetTrailField) {
     wetTrailCondition.value = "";
   }
 
-  cairnHeightField.style.display = observationType === "Cairn" ? "block" : "none";
-  cairnDiameterField.style.display = observationType === "Cairn" ? "block" : "none";
-  if (observationType !== "Cairn") {
-    cairnHeight.value = "";
-    cairnDiameter.value = "";
+  const showErosionField = observationType === "Mark erosion";
+  erosionTypeField.style.display = showErosionField ? "block" : "none";
+  if (!showErosionField) {
+    erosionType.value = "";
   }
 
-  trackingControls.style.display = observationType === "Track trail" ? "block" : "none";
-  if (observationType !== "Track trail") {
+  const trackingTasks = ["Track >1 m wide sections", "Track and measure width", "Track faint trails"];
+  trackingControls.style.display = trackingTasks.includes(observationType) ? "block" : "none";
+  if (!trackingTasks.includes(observationType)) {
     stopTracking();
   }
 }
@@ -136,8 +134,10 @@ function renderTrackingLine() {
   }
 
   if (trackingPoints.length >= 2 && map) {
+    const lineColor = TRACKING_TASK_COLORS[typeSelect.value] || "#f59e0b";
+
     trackingPolyline = L.polyline(trackingPoints, {
-      color: "#f59e0b",
+      color: lineColor,
       weight: 4,
       opacity: 0.9,
       lineCap: "round",
@@ -228,7 +228,7 @@ async function loadTaskLayers() {
 
   try {
     const layers = await Promise.all(
-      TASK_GEOJSONS.map(async ({ file, color, label }) => {
+      TASK_GEOJSONS.map(async ({ file, color, label, dashed }) => {
         const response = await fetch(file);
         if (!response.ok) {
           throw new Error(`Failed to load ${file}: ${response.status}`);
@@ -242,6 +242,7 @@ async function loadTaskLayers() {
             weight: 4,
             opacity: 0.9,
             fillOpacity: 0.15,
+            dashArray: dashed ? "10 10" : null,
             lineCap: "round",
             lineJoin: "round"
           }),
@@ -402,14 +403,14 @@ function addMarker(o) {
     ? `<img class="popup-photo" src="${escapeAttr(o.photo_url)}" alt="Observation photo">`
     : "";
 
-  if (o.observation_type === "Track trail") {
+  if (TRACKING_TASKS.includes(o.observation_type)) {
     const points = typeof o.track_points === "string"
       ? JSON.parse(o.track_points)
       : (o.track_points || []);
 
     if (Array.isArray(points) && points.length >= 2) {
       const line = L.polyline(points.map(([lat, lng]) => [lat, lng]), {
-        color: "#f59e0b",
+        color: TRACKING_TASK_COLORS[o.observation_type] || "#3b82f6",
         weight: 4,
         opacity: 0.9,
         lineCap: "round",
@@ -419,7 +420,7 @@ function addMarker(o) {
       line.bindPopup(`
         <strong>${escapeHtml(o.group_name)}</strong><br>
         ${escapeHtml(o.observation_type)}<br>
-        ${o.measurement ? `<b>Width:</b> ${escapeHtml(o.measurement)} m<br>` : ""}
+        ${o.measurement ? `<b>Width:</b> ${escapeHtml(o.measurement)}<br>` : ""}
         ${o.note ? `${escapeHtml(o.note)}<br>` : ""}
         ${photo}
         <small>${date}<br>Route points: ${points.length}</small>
@@ -431,9 +432,8 @@ function addMarker(o) {
   }
 
   const markerColors = {
-    "Trail width": "#ef4444",
-    "Cairn": "#3b82f6",
-    "Wet trail": "#10b981",
+    "Mark wet trail": "#10b981",
+    "Mark erosion": "#f59e0b",
     "default": "#6b7280"
   };
   const markerColor = markerColors[o.observation_type] || markerColors["default"];
@@ -446,21 +446,27 @@ function addMarker(o) {
     weight: 2
   }).addTo(map);
 
-  const measurementText =
-    o.observation_type === "Trail width" && o.measurement
-      ? `<b>Width:</b> ${escapeHtml(o.measurement)} m<br>`
+  const widthText =
+    o.observation_type === "Track and measure width" && o.measurement
+      ? `<b>Width:</b> ${escapeHtml(o.measurement)}<br>`
       : "";
 
-  const cairnText =
-    o.observation_type === "Cairn"
-      ? `${o.cairn_height ? `<b>Height:</b> ${escapeHtml(o.cairn_height)} m<br>` : ""}${o.cairn_diameter ? `<b>Diameter:</b> ${escapeHtml(o.cairn_diameter)} m<br>` : ""}`
+  const wetTrailText =
+    o.observation_type === "Mark wet trail" && o.wet_trail_condition
+      ? `<b>Condition:</b> ${escapeHtml(o.wet_trail_condition)}<br>`
+      : "";
+
+  const erosionText =
+    o.observation_type === "Mark erosion" && o.erosion_feature
+      ? `<b>Erosion type:</b> ${escapeHtml(o.erosion_feature)}<br>`
       : "";
 
   marker.bindPopup(`
     <strong>${escapeHtml(o.group_name)}</strong><br>
     ${escapeHtml(o.observation_type)}<br>
-    ${measurementText}
-    ${cairnText}
+    ${widthText}
+    ${wetTrailText}
+    ${erosionText}
     ${o.note ? `${escapeHtml(o.note)}<br>` : ""}
     ${photo}
     <small>${date}<br>GPS accuracy: ${Math.round(o.gps_accuracy)} m</small>
@@ -497,26 +503,20 @@ saveButton.addEventListener("click", async () => {
   const group_name = "Group 1";
   const observation_type = document.getElementById("type").value;
 
-  let measurementValue = "";
-  let cairnHeightValue = "";
-  let cairnDiameterValue = "";
-  let surfaceConditionValue = "";
-  let trailArchitectureValue = "";
+  let widthCategoryValue = "";
   let wetTrailConditionValue = "";
+  let erosionTypeValue = "";
   let trackData = null;
 
-  if (observation_type === "Trail width" || observation_type === "Track trail") {
-    measurementValue = sanitizeNumericField(measurement);
-    surfaceConditionValue = surfaceCondition.value.trim();
-    trailArchitectureValue = trailArchitecture.value.trim();
-  } else if (observation_type === "Cairn") {
-    cairnHeightValue = sanitizeNumericField(cairnHeight);
-    cairnDiameterValue = sanitizeNumericField(cairnDiameter);
-  } else if (observation_type === "Wet trail") {
+  if (observation_type === "Track and measure width") {
+    widthCategoryValue = widthCategory.value.trim();
+  } else if (observation_type === "Mark wet trail") {
     wetTrailConditionValue = wetTrailCondition.value.trim();
+  } else if (observation_type === "Mark erosion") {
+    erosionTypeValue = erosionType.value.trim();
   }
 
-  if (observation_type === "Track trail") {
+  if (TRACKING_TASKS.includes(observation_type)) {
     if (trackingPoints.length < 2) {
       setMessage("Please start and finish tracking a route before saving.");
       return;
@@ -524,23 +524,23 @@ saveButton.addEventListener("click", async () => {
     trackData = JSON.stringify(trackingPoints);
   }
 
-  if (!note && !measurementValue && !cairnHeightValue && !cairnDiameterValue && !surfaceConditionValue && !trailArchitectureValue && !wetTrailConditionValue && !selectedPhoto && !trackData) {
-    setMessage("Please add a measurement, note, photo, or track trail.");
+  if (!note && !widthCategoryValue && !wetTrailConditionValue && !erosionTypeValue && !selectedPhoto && !trackData) {
+    setMessage("Please add a remark, photo, or tracked route before saving.");
     return;
   }
 
-  if ((observation_type === "Trail width" || observation_type === "Track trail") && !measurementValue) {
-    setMessage("Please enter the trail width in metres.");
+  if (observation_type === "Track and measure width" && !widthCategoryValue) {
+    setMessage("Please select the trail width category.");
     return;
   }
 
-  if (observation_type === "Wet trail" && !wetTrailConditionValue) {
+  if (observation_type === "Mark wet trail" && !wetTrailConditionValue) {
     setMessage("Please select the wet trail condition.");
     return;
   }
 
-  if (observation_type === "Cairn" && !cairnHeightValue && !cairnDiameterValue) {
-    setMessage("Please enter cairn height and/or diameter in metres.");
+  if (observation_type === "Mark erosion" && !erosionTypeValue) {
+    setMessage("Please select the erosion type.");
     return;
   }
 
@@ -551,14 +551,11 @@ saveButton.addEventListener("click", async () => {
     group_name,
     observation_type,
     note,
-    measurement: measurementValue,
-    cairn_height: cairnHeightValue,
-    cairn_diameter: cairnDiameterValue,
-    surface_condition: surfaceConditionValue,
-    trail_architecture: trailArchitectureValue,
+    measurement: widthCategoryValue,
     wet_trail_condition: wetTrailConditionValue,
-    latitude: observation_type === "Track trail" ? trackingPoints[0][0] : currentPosition.latitude,
-    longitude: observation_type === "Track trail" ? trackingPoints[0][1] : currentPosition.longitude,
+    erosion_feature_oid: erosionTypeValue,
+    latitude: TRACKING_TASKS.includes(observation_type) ? trackingPoints[0][0] : currentPosition.latitude,
+    longitude: TRACKING_TASKS.includes(observation_type) ? trackingPoints[0][1] : currentPosition.longitude,
     gps_accuracy: currentPosition.accuracy,
     track_points: trackData
   };
@@ -603,12 +600,9 @@ saveButton.addEventListener("click", async () => {
   count.textContent = Number(count.textContent || 0) + 1;
 
   document.getElementById("note").value = "";
-  measurement.value = "";
-  cairnHeight.value = "";
-  cairnDiameter.value = "";
-  surfaceCondition.value = "";
-  trailArchitecture.value = "";
+  widthCategory.value = "";
   wetTrailCondition.value = "";
+  erosionType.value = "";
   trackingPoints = [];
   if (trackingPolyline) {
     map.removeLayer(trackingPolyline);

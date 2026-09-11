@@ -5,15 +5,18 @@ create table public.observations (
   created_at timestamptz not null default now(),
   group_name text not null,
   observation_type text not null check (
-    observation_type in ('Trail width', 'Cairn', 'Wet trail', 'Track trail', 'Other')
+    observation_type in (
+      'Track >1 m wide sections',
+      'Track and measure width',
+      'Track faint trails',
+      'Mark wet trail',
+      'Mark erosion'
+    )
   ),
   note text,
   measurement text,
-  surface_condition text,
-  trail_architecture text,
+  erosion_feature text,
   wet_trail_condition text,
-  cairn_height text,
-  cairn_diameter text,
   latitude double precision not null,
   longitude double precision not null,
   gps_accuracy double precision not null,

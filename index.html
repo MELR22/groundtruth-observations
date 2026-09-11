@@ -42,34 +42,20 @@
 
       <label for="type">Observation category</label>
       <select id="type">
-        <option value="Trail width">Trail width</option>
-        <option value="Cairn">Cairn </option>
-        <option value="Wet trail">Wet trail</option>
-        <option value="Track trail">Track trail</option>
-        <option value="Other">Other</option>
+        <option value="Track >1 m wide sections">Track >1 m wide sections</option>
+        <option value="Track and measure width">Track and measure width</option>
+        <option value="Track faint trails">Track faint trails</option>
+        <option value="Mark wet trail">Mark wet trail</option>
+        <option value="Mark erosion">Mark erosion</option>
       </select>
 
       <div id="widthField">
-        <label for="measurement">Trail width (in meter)</label>
-        <div class="measurement-row">
-          <input id="measurement" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="e.g. 1.25" />
-          <span>metres</span>
-        </div>
-
-        <label for="surfaceCondition">Surface Condition</label>
-        <select id="surfaceCondition">
+        <label for="widthCategory">Trail width category</label>
+        <select id="widthCategory">
           <option value="">-- Select one --</option>
-          <option value="Lightly Worn">Still vegetation cover, but affected by trampling</option>
-          <option value="Root Exposed">Mostly roots</option>
-          <option value="Mixed grass and bare soil">Mostly grass and moss</option>
-          <option value="Barren Core">Mostly barren soil</option>
-        </select>
-
-        <label for="trailArchitecture">Trail Architecture</label>
-        <select id="trailArchitecture">
-          <option value="">-- Select one --</option>
-          <option value="Single trail">Single trail</option>
-          <option value="Braided/Parallel trail">Braided/parallel trails</option>
+          <option value="< 50 cm">&lt; 50 cm</option>
+          <option value="50–100 cm">50–100 cm</option>
+          <option value="> 100 cm">&gt; 100 cm</option>
         </select>
       </div>
 
@@ -77,30 +63,23 @@
         <label for="wetTrailCondition">Wet trail condition</label>
         <select id="wetTrailCondition">
           <option value="">-- Select one --</option>
-          <option value="Water running">Water running</option>
-          <option value="Water standing">Water standing</option>
+          <option value="Running water">Running water</option>
+          <option value="Standing water">Standing water</option>
           <option value="Muddy">Muddy</option>
         </select>
       </div>
 
-      <div id="cairnHeightField">
-        <label for="cairnHeight">Cairn height (in meter)</label>
-        <div class="measurement-row">
-          <input id="cairnHeight" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="e.g. 1.25" />
-          <span>metres</span>
-        </div>
+      <div id="erosionTypeField">
+        <label for="erosionType">Erosion type</label>
+        <select id="erosionType">
+          <option value="">-- Select one --</option>
+          <option value="Big hole">Big hole</option>
+          <option value="Big rock on trail">Big rock on trail</option>
+          <option value="Other">Other</option>
+        </select>
       </div>
 
-      <div id="cairnDiameterField">
-        <label for="cairnDiameter">Cairn diameter (in meter)</label>
-        <div class="measurement-row">
-          <input id="cairnDiameter" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*"
-            placeholder="e.g. 1.25" />
-          <span>metres</span>
-        </div>
-      </div>
-
-      <label for="note">Description <span>(optional)</span></label>
+      <label for="note">Remark <span>(optional)</span></label>
       <textarea id="note" placeholder="Add any additional notes or observations..." rows="4"></textarea>
 
       <label for="photo">Photo <span>(optional)</span></label>
