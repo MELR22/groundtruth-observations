@@ -1,0 +1,3 @@
+cairn_diameter,cairn_height,created_at,gps_accuracy,group_name,id,latitude,longitude,measurement,note,observation_type,photo_url,surface_condition,trail_architecture
+,,2026-08-14T12:10:12.378791+00:00,15.2729997634888,Group 1,3,69.6619921,18.9219095,6.00,,Trail width,,Barren Core,Braided/Parallel trail
+,,2026-08-14T11:59:10.457227+00:00,13.6049995422363,Group 1,1,69.6619575,18.9218831,1.05,,Trail width,https://oehndpyzeoywfypqtsjs.supabase.co/storage/v1/object/public/observation-photos/1/1786708750731.jpg,Lightly Worn,Single trail

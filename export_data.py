@@ -143,6 +143,7 @@ def create_geodataframes(observations):
             'surface_condition': obs.get('surface_condition'),
             'trail_architecture': obs.get('trail_architecture'),
             'note': obs.get('note'),
+            'wet_trail_condition': obs.get("wet_trail_condition"),            
             'gps_accuracy': obs.get('gps_accuracy'),
             'created_at': obs.get('created_at'),
             'photo_url': obs.get('photo_url'),
@@ -274,10 +275,10 @@ def main():
 
 
         # Download photos
-        try:
-            download_photos(supabase, observations)
-        except Exception as e:
-            print(f"✗ Error downloading photos: {e}")
+        # try:
+        #     download_photos(supabase, observations)
+        # except Exception as e:
+        #     print(f"✗ Error downloading photos: {e}")
         
         # Print summary
         print_summary(observations)

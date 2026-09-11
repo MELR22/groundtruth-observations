@@ -46,6 +46,13 @@ const trackingStatus = document.getElementById("trackingStatus");
 const TRACK_SAMPLE_MS = 500;
 const TRACK_MIN_DISTANCE_M = 2;
 
+const TASK_GEOJSONS = [
+  { file: "tasks/GT_task1.geojson", color: "#2563eb", label: "Task 1" },
+  { file: "tasks/GT_task2.geojson", color: "#16a34a", label: "Task 2" }
+];
+
+let taskLayers = [];
+
 function normalizeDecimalInput(value) {
   if (value === null || value === undefined) return "";
   return String(value).replace(",", ".").trim();
@@ -211,6 +218,58 @@ function initMap(lat = 69.64, lon = 18.99) {
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+}
+
+async function loadTaskLayers() {
+  if (!map) return;
+
+  taskLayers.forEach(layer => map.removeLayer(layer));
+  taskLayers = [];
+
+  try {
+    const layers = await Promise.all(
+      TASK_GEOJSONS.map(async ({ file, color, label }) => {
+        const response = await fetch(file);
+        if (!response.ok) {
+          throw new Error(`Failed to load ${file}: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        const layer = L.geoJSON(data, {
+          style: () => ({
+            color,
+            weight: 4,
+            opacity: 0.9,
+            fillOpacity: 0.15,
+            lineCap: "round",
+            lineJoin: "round"
+          }),
+          onEachFeature: (feature, currentLayer) => {
+            const props = feature.properties || {};
+            const description = props.name || props.Name || props.label || props.Label || label;
+            currentLayer.bindPopup(`<strong>${label}</strong><br>${escapeHtml(description)}`);
+          }
+        }).addTo(map);
+
+        return layer;
+      })
+    );
+
+    taskLayers = layers;
+
+    const allBounds = taskLayers.reduce((combinedBounds, layer) => {
+      const bounds = layer.getBounds();
+      return combinedBounds ? combinedBounds.extend(bounds) : bounds;
+    }, null);
+
+    if (allBounds && allBounds.isValid()) {
+      map.fitBounds(allBounds, { padding: [30, 30], maxZoom: 15 });
+    }
+  } catch (error) {
+    console.error(error);
+    setMessage("Could not load the task GeoJSON files.");
+  }
 }
 
 function updatePosition(position) {
@@ -574,5 +633,6 @@ saveButton.addEventListener("click", async () => {
 });
 
 initMap();
+loadTaskLayers();
 startGPS();
 loadObservations();
