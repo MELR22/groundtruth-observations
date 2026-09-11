@@ -280,6 +280,22 @@ button#save:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+}
+
+.map-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.location-button {
+  margin-top: 0;
+  width: auto;
+  white-space: nowrap;
+  padding: 8px 12px;
+  background: #edf4eb;
+  border-color: var(--rissa-green);
 }
 
 .count {

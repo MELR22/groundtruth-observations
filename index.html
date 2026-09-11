@@ -42,8 +42,8 @@
 
       <label for="type">Observation category</label>
       <select id="type">
-        <option value="Track >1 m wide sections">Track >1 m wide sections</option>
-        <option value="Track and measure width">Track and measure width</option>
+        <option value="Track >1 m wide sections">Track >1 m wide sections (blue trails)</option>
+        <option value="Track and measure width">Track and measure width (green trails)</option>
         <option value="Track faint trails">Track faint trails</option>
         <option value="Mark wet trail">Mark wet trail</option>
         <option value="Mark erosion">Mark erosion</option>
@@ -103,7 +103,10 @@
           <span class="step">2</span>
           <h2>Shared observations</h2>
         </div>
-        <span id="count" class="count">0</span>
+        <div class="map-actions">
+          <button id="myLocationButton" type="button" class="secondary-button location-button">My Location</button>
+          <span id="count" class="count">0</span>
+        </div>
       </div>
       <div id="map"></div>
     </section>

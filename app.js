@@ -17,6 +17,7 @@ let selectedPhoto = null;
 let trackingTimer = null;
 let trackingPoints = [];
 let trackingPolyline = null;
+let initialLocationCentered = false;
 
 const gpsStatus = document.getElementById("gpsStatus");
 const coordinates = document.getElementById("coordinates");
@@ -38,6 +39,7 @@ const trackingControls = document.getElementById("trackingControls");
 const startTrackingButton = document.getElementById("startTracking");
 const stopTrackingButton = document.getElementById("stopTracking");
 const trackingStatus = document.getElementById("trackingStatus");
+const myLocationButton = document.getElementById("myLocationButton");
 
 const TRACK_SAMPLE_MS = 500;
 const TRACK_MIN_DISTANCE_M = 2;
@@ -212,6 +214,7 @@ startTrackingButton.addEventListener("click", startTracking);
 stopTrackingButton.addEventListener("click", () => {
   stopTracking();
 });
+myLocationButton?.addEventListener("click", goToMyLocation);
 
 function initMap(lat = 69.64, lon = 18.99) {
   map = L.map("map").setView([lat, lon], 13);
@@ -283,14 +286,18 @@ function updatePosition(position) {
     `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 
   if (!map) initMap(latitude, longitude);
-  map.setView([latitude, longitude], Math.max(map.getZoom(), 15));
+
+  if (!initialLocationCentered && map) {
+    map.setView([latitude, longitude], Math.max(map.getZoom(), 15));
+    initialLocationCentered = true;
+  }
 
   if (userMarker) map.removeLayer(userMarker);
   userMarker = L.circleMarker([latitude, longitude], {
     radius: 8,
-    color: "#2f4249",
-    fillColor: "#82b27f",
-    fillOpacity: 0.9,
+    color: "#2563eb",
+    fillColor: "#93c5fd",
+    fillOpacity: 0.95,
     weight: 3
   }).addTo(map).bindPopup("Your current position");
 }
@@ -298,6 +305,30 @@ function updatePosition(position) {
 function gpsError(error) {
   gpsStatus.textContent = "GPS unavailable";
   setMessage("Could not get your GPS position. Check location permissions.");
+}
+
+function goToMyLocation() {
+  if (!currentPosition) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        updatePosition(position);
+        if (map && currentPosition) {
+          map.flyTo([currentPosition.latitude, currentPosition.longitude], Math.max(map.getZoom(), 15));
+        }
+      },
+      gpsError,
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 15000
+      }
+    );
+    return;
+  }
+
+  if (map) {
+    map.flyTo([currentPosition.latitude, currentPosition.longitude], Math.max(map.getZoom(), 15));
+  }
 }
 
 function startGPS() {
@@ -553,7 +584,7 @@ saveButton.addEventListener("click", async () => {
     note,
     measurement: widthCategoryValue,
     wet_trail_condition: wetTrailConditionValue,
-    erosion_feature_oid: erosionTypeValue,
+    erosion_feature: erosionTypeValue,
     latitude: TRACKING_TASKS.includes(observation_type) ? trackingPoints[0][0] : currentPosition.latitude,
     longitude: TRACKING_TASKS.includes(observation_type) ? trackingPoints[0][1] : currentPosition.longitude,
     gps_accuracy: currentPosition.accuracy,
