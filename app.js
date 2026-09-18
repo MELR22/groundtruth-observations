@@ -43,9 +43,10 @@ const myLocationButton = document.getElementById("myLocationButton");
 
 const TRACK_SAMPLE_MS = 500;
 const TRACK_MIN_DISTANCE_M = 2;
+const MAP_LINE_WEIGHT = 2;
 
 const TASK_GEOJSONS = [
-  { file: "tasks/fainttrails.geojson", color: "#eb2525", label: "Task 1", dashed: true }
+  { file: "tasks/fainttrails.geojson", color: "#eb2525", label: "Task 1", dashed: false, }
 ];
 
 const TRACKING_TASKS = [
@@ -139,7 +140,7 @@ function renderTrackingLine() {
 
     trackingPolyline = L.polyline(trackingPoints, {
       color: lineColor,
-      weight: 4,
+      weight: MAP_LINE_WEIGHT,
       opacity: 0.9,
       lineCap: "round",
       lineJoin: "round"
@@ -241,7 +242,7 @@ async function loadTaskLayers() {
         const layer = L.geoJSON(data, {
           style: () => ({
             color,
-            weight: 4,
+            weight: MAP_LINE_WEIGHT,
             opacity: 0.9,
             fillOpacity: 0.15,
             dashArray: dashed ? "10 10" : null,
@@ -441,7 +442,7 @@ function addMarker(o) {
     if (Array.isArray(points) && points.length >= 2) {
       const line = L.polyline(points.map(([lat, lng]) => [lat, lng]), {
         color: TRACKING_TASK_COLORS[o.observation_type] || "#3b82f6",
-        weight: 4,
+        weight: MAP_LINE_WEIGHT,
         opacity: 0.9,
         lineCap: "round",
         lineJoin: "round"
