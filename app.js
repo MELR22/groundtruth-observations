@@ -45,8 +45,7 @@ const TRACK_SAMPLE_MS = 500;
 const TRACK_MIN_DISTANCE_M = 2;
 
 const TASK_GEOJSONS = [
-  { file: "tasks/GT_task1.geojson", color: "#2563eb", label: "Task 1", dashed: true },
-  { file: "tasks/GT_task2.geojson", color: "#16a34a", label: "Task 2", dashed: true }
+  { file: "tasks/fainttrails.geojson", color: "#eb2525", label: "Task 1", dashed: true }
 ];
 
 const TRACKING_TASKS = [

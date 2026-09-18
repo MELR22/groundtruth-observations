@@ -129,6 +129,12 @@ def create_geodataframes(observations):
     track_data = []
     point_data = []
 
+    tracking_tasks = {
+        "Track >1 m wide sections",
+        "Track and measure width",
+        "Track faint trails"
+    }
+
     for obs in observations:
         observation_type = obs.get('observation_type')
 
@@ -138,24 +144,24 @@ def create_geodataframes(observations):
             'group_name': obs.get('group_name'),
             'observation_type': observation_type,
             'measurement': obs.get('measurement'),
-            'cairn_height': obs.get('cairn_height'),
-            'cairn_diameter': obs.get('cairn_diameter'),
-            'surface_condition': obs.get('surface_condition'),
-            'trail_architecture': obs.get('trail_architecture'),
             'note': obs.get('note'),
-            'wet_trail_condition': obs.get("wet_trail_condition"),            
+            'wet_trail_condition': obs.get('wet_trail_condition'),
+            'erosion_feature': obs.get('erosion_feature'),
             'gps_accuracy': obs.get('gps_accuracy'),
             'created_at': obs.get('created_at'),
             'photo_url': obs.get('photo_url'),
         }
 
         # -------------------------
-        # TRACK TRAIL
+        # TRACK TRAILS
         # -------------------------
-        if observation_type == "Track trail":
+        if observation_type in tracking_tasks:
 
-            track_string = obs.get('track_points')
-            track = ast.literal_eval(track_string)
+            track_points = obs.get('track_points')
+            if isinstance(track_points, str):
+                track = ast.literal_eval(track_points)
+            else:
+                track = track_points or []
 
             if len(track) < 2:
                 print(
@@ -275,10 +281,10 @@ def main():
 
 
         # Download photos
-        # try:
-        #     download_photos(supabase, observations)
-        # except Exception as e:
-        #     print(f"✗ Error downloading photos: {e}")
+        try:
+            download_photos(supabase, observations)
+        except Exception as e:
+            print(f"✗ Error downloading photos: {e}")
         
         # Print summary
         print_summary(observations)
